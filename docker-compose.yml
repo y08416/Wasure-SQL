@@ -14,24 +14,16 @@ services:
       PYTHONPATH: "/"
 
   wasure-sql:
-    image: postgres:15
-    restart: always
-    env_file:
-      - .env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-
-  db:
-    build: .
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
-      # POSTGRES_USER: admin
-      # POSTGRES_PASSWORD: admin
-    volumes:
-      - ./:/work
-    working_dir: /work
+      image: postgres:15
+      restart: always
+      ports:
+        - "5432:5432"
+      environment:
+        POSTGRES_USER: ${DB_USER}
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+        POSTGRES_DB: ${DB_NAME}
+      volumes:
+        - postgres_data:/var/lib/postgresql/data/
 
 volumes:
   postgres_data:
