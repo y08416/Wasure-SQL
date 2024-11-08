@@ -1,4 +1,4 @@
-#!/Users/ozakiyousuke/Documents/wasure-sql/venv/bin/python3.12
+#!/Users/nagaokaryuunotasuku/projects/wasure-sql/venv/bin/python3.13
 # -*- coding: utf-8 -*-
 import re
 import sys
