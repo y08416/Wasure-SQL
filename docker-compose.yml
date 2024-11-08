@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - wasure-sql
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      PYTHONPATH: "/"
+
+  wasure-sql:
+    image: postgres:15
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  db:
+    build: .
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      # POSTGRES_USER: admin
+      # POSTGRES_PASSWORD: admin
+    volumes:
+      - ./:/work
+    working_dir: /work
+
+volumes:
+  postgres_data:

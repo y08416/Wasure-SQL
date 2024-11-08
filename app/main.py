@@ -9,6 +9,13 @@ from datetime import datetime, timedelta, date
 import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from app.routers.signup import router as signup_router
+from app.routers.login import router as login_router
+from app.database import engine, get_db
+from app import models
+
+# テーブルを作成
+models.Base.metadata.create_all(bind=engine)
 
 # 環境変数のロード
 load_dotenv()
@@ -24,49 +31,6 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# SQLAlchemy モデル定義
-class User(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    location_id = Column(Integer, ForeignKey('locations.id'))
-    events = relationship("Event", back_populates="user")
-    reminders = relationship("Reminder", back_populates="user")
-
-class Event(Base):
-    __tablename__ = "events"
-    event_id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    date = Column(Date)  # SQLAlchemyのDate型
-    location_id = Column(Integer, ForeignKey('locations.id'))
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship("User", back_populates="events")
-    items = relationship("Item", back_populates="event")
-
-class Item(Base):
-    __tablename__ = "items"
-    item_id = Column(Integer, primary_key=True, index=True)
-    event_id = Column(Integer, ForeignKey('events.event_id'))
-    is_checked = Column(Boolean, default=False)
-    notes = Column(String)
-    event = relationship("Event", back_populates="items")
-
-class Reminder(Base):
-    __tablename__ = "reminders"
-    reminder_id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    title = Column(String, index=True)
-    schedule_date = Column(Date)
-    is_active = Column(Boolean, default=True)
-    message = Column(String)
-    user = relationship("User", back_populates="reminders")
-
-class Location(Base):
-    __tablename__ = "locations"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
 
 # Pydantic モデル定義
 class EventModel(BaseModel):
@@ -85,7 +49,12 @@ app = FastAPI()
 
 # 認証関連の設定
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+# signup用ルーター
+app.include_router(signup_router)
+# login用ルーターを追加
+app.include_router(login_router)
 
 # ユーティリティ関数
 def get_db():
@@ -126,18 +95,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
-
-@app.post("/signup")
-async def signup(email: str, password: str, username: str, location_id: int, db = Depends(get_db)):
-    db_user = db.query(User).filter(User.email == email).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    hashed_password = get_password_hash(password)
-    new_user = User(email=email, username=username, hashed_password=hashed_password, location_id=location_id)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return {"message": "User created successfully"}
 
 @app.post("/events", response_model=EventModel)
 async def create_event(event: EventModel, db = Depends(get_db)):
