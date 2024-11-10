@@ -1,3 +1,2 @@
-.envvenv/
-venv/
+.env
 venv/
