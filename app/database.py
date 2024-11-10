@@ -11,9 +11,6 @@ load_dotenv()  # 追加
 # envから取って
 DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./test.db')
 
-# デバッグ用（一時的に追加）
-print(f"DATABASE_URL: {DATABASE_URL}")
-
 # データベースエンジンの作成
 engine = create_engine(DATABASE_URL)
 
