@@ -7,8 +7,7 @@ from dotenv import load_dotenv  # 追加
 # .envファイルを読み込む
 load_dotenv()  # 追加
 
-# データベースURLの設定（デフォルト値付き）
-# envから取って
+
 DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./test.db')
 
 # データベースエンジンの作成
