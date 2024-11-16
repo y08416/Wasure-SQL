@@ -2,7 +2,7 @@
 FROM python:3.9-slim
 
 # 作業ディレクトリを設定
-WORKDIR /
+WORKDIR /app
 
 # 必要なパッケージをインストール
 COPY requirements.txt .
@@ -14,12 +14,9 @@ COPY . .
 # ポートを公開
 EXPOSE 8000
 
+# 環境変数の設定
+ENV PYTHONPATH="/app"
+ENV LANG ja_JP.utf8
+
 # アプリケーションを起動
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-# 日本語ロケール設定
-ENV LANG ja_JP.utf8
-ENV PYTHONPATH="${PYTHONPATH}:/"
-
-# PostgreSQL コンテナの追加
-FROM postgres:13.2-alpine

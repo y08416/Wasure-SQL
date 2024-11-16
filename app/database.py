@@ -1,13 +1,14 @@
-# app/database.py
-# a
-
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
+from dotenv import load_dotenv  # 追加
 
-# 環境変数からデータベースURLを取得
-DATABASE_URL = os.getenv("DATABASE_URL")
+# .envファイルを読み込む
+load_dotenv()  # 追加
+
+
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./test.db')
 
 # データベースエンジンの作成
 engine = create_engine(DATABASE_URL)
